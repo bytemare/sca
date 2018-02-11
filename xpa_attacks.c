@@ -29,8 +29,6 @@ void dpa_2(container *data){
          */
         for (key[i] = 0 ; key[i] < AES_KEY_RANGE ; key[i]++){
 
-
-
             /**
              * Go through all the probes, and add up the datapoints
              */
@@ -64,6 +62,10 @@ void dpa_2(container *data){
 
             // 5. Insert it in reference curve
             ref_curve[ key[i] ] = max;
+
+            // Clean up memory
+            memset(group[0], 0, sizeof(double)*data->nb_datapoints);
+            memset(group[1], 0, sizeof(double)*data->nb_datapoints);
         }
 
         // 6. Get the outstanding/maximum value out of the reference curve for that byte
@@ -83,4 +85,11 @@ void dpa_2(container *data){
         print(" %d ", key[i]);
     }
     printf("]\n");
+
+    // Clean up memory and quit
+    memset(key, 0, AES_KEY_SIZE);
+    memset(ref_curve, 0, AES_KEY_RANGE);
+
+    free(group[0]);
+    free(group[1]);
 }

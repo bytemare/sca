@@ -10,7 +10,7 @@ int main(int argc, char *argv[]){
     printf("[i] Checking file...\n");
     FILE* file = check_and_open_file(argv[1]);
     if (file == NULL){
-        return 1;
+        exit(1);
     }
 
     printf("File %s checked and opened.\n", argv[1]);
