@@ -118,7 +118,7 @@ void cpa(container *data) {
     uint8_t i, j, k;
     uint8_t key[AES_KEY_SIZE];
 
-    double hamming[AES_KEY_RANGE] = {0};
+    double hamming[data->nb_probes] = {0};
     double ref_curve[AES_KEY_RANGE] = {0};
 
 
@@ -142,7 +142,18 @@ void cpa(container *data) {
             }
 
             // 3. Build a reference curve with correlation coefficients
-            ref_curve[key[i]] = correlationCoefficient(data->t_traces[?], hamming);
+            //ref_curve[key[i]] = correlationCoefficient(data->t_traces[?], hamming);
+
+
+            // 3.b Store all the correlation coefficients of the samples
+            ref_curve[ key[i] ] = 0;
+            for(j = 0; j < NB_SAMPLES; j++){
+                // use the absolute value (-1 and 1 are the values at which the correlation is the strongest)
+                k = fabsf(correlationCoefficient(data->t_traces[a], hamming));
+                if (k > ref_curve[ key[i] ]){
+                    ref_curve[ key[i] ] = k;
+                }
+            }
         }
 
         // 4. Get the outstanding/maximum value out of the reference curve for that byte
@@ -164,3 +175,20 @@ void cpa(container *data) {
     // Clean up memory and quit
     memset(key, 0, AES_KEY_SIZE);
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
