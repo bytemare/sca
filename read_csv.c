@@ -31,7 +31,7 @@ container* initialise_data_memory(int lines){
     container *data = malloc(sizeof(container));
 
     if (data == NULL ){
-        perror("[-] Could not allocate data structure.");
+        perror("[ERROR] Could not allocate data structure.");
         return NULL;
     }
 
@@ -40,14 +40,14 @@ container* initialise_data_memory(int lines){
 
     data->t_plaintexts = calloc((size_t) nb_probes, sizeof(char *));
     if (data->t_plaintexts == NULL){
-        perror("[-] Could not allocate memory for data->t_plaintexts");
+        perror("[ERROR] Could not allocate memory for data->t_plaintexts");
         free(data);
         return NULL;
     }
 
     data->t_traces = calloc((size_t) nb_probes, sizeof(float *));
     if (data->t_traces == NULL){
-        perror("[-] Could not allocate memory for data->t_plaintexts");
+        perror("[ERROR] Could not allocate memory for data->t_plaintexts");
         free(data->t_plaintexts);
         free(data);
         return NULL;
@@ -90,14 +90,14 @@ FILE* check_and_open_file(const char *filename){
     fd = open(filename, O_RDONLY);
 
     if ( fd == -1 ){
-        perror("[-] Could not open file.");
+        perror("[ERROR] Could not open file.");
         return NULL;
     }
 
     fstat(fd, &file_info);
 
     if (!S_ISREG(file_info.st_mode)) {
-        perror("Error : file is not a regular file !");
+        perror("[ERROR] File is not a regular file !");
         close(fd);
         return NULL;
     }
@@ -105,7 +105,7 @@ FILE* check_and_open_file(const char *filename){
     file = fdopen(fd, "r");
 
     if(file == NULL){
-        perror("[-] Could not open file stream.");
+        perror("[ERROR] Could not open file stream.");
         close(fd);
         return NULL;
     }
@@ -264,23 +264,12 @@ int read_datapoints_line(int i, FILE *file, float **t_traces, unsigned char deli
  * @param length
  * @return
  */
-container* read_data_from_source (const char *filename){
+container* read_data_from_source (FILE *file){
 
     int i, ret;
     int lines;
-    FILE* file;
     container *data;
-    unsigned char delimiter = ',';
-
-    /**
-     * Operate checks on file and open it for read
-     */
-    if ( (file = check_and_open_file(filename)) == NULL ){
-        return NULL;
-    }
-
-    printf("File %s checked and opened.\n", filename);
-
+    unsigned char delimiter = CSV_DELIMITER;
 
     /**
      * Count the number of lines
@@ -293,7 +282,7 @@ container* read_data_from_source (const char *filename){
         return NULL;
     }
 
-    printf("Found %d entries.\n", lines);
+    printf("[i] Found %d entries.\n", lines);
 
     /**
      * Allocate memory for our data structures
@@ -304,7 +293,7 @@ container* read_data_from_source (const char *filename){
         return NULL;
     }
 
-    printf("Initialised memory buffers.\n");
+    // printf("Initialised memory buffers.\n");
 
     /**
      * Go through file, read and parse lines, and fill data container
@@ -341,21 +330,11 @@ container* read_data_from_source (const char *filename){
 
     }
 
-    printf("Read file and stored data.\n");
+    printf("[i] Read file and loaded data.\n");
 
-    printf("Line 2 :\n- '%s'\n- '%.20f'\n", data->t_plaintexts[2], data->t_traces[2][1]);
+    // printf("Line 2 :\n- '%s'\n- '%.20f'\n", data->t_plaintexts[2], data->t_traces[2][1]);
 
     fclose(file);
 
     return data;
-}
-
-
-
-void main(){
-    char *filename = FILENAME;
-    container *data = read_data_from_source(filename);
-
-    free_data_memory(data);
-    exit(0);
 }
