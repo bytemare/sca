@@ -29,7 +29,9 @@ int main(int argc, char *argv[]){
     dpa_2(data);
 
 
-
+    /**
+     * Job is done.
+     */
     free_data_memory(data);
     exit(0);
 }

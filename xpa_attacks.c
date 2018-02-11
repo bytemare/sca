@@ -78,6 +78,9 @@ void dpa_2(container *data){
         }
 
         key[i] = k;
+
+        // Clean up memory
+        memset(ref_curve, 0, AES_KEY_RANGE*sizeof(double));
     }
 
     printf("Recovered AES key :\n[ ");
@@ -88,7 +91,6 @@ void dpa_2(container *data){
 
     // Clean up memory and quit
     memset(key, 0, AES_KEY_SIZE);
-    memset(ref_curve, 0, AES_KEY_RANGE);
 
     free(group[0]);
     free(group[1]);
