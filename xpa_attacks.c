@@ -115,7 +115,8 @@ uint8_t hamming_weight(uint8_t k){
 
 void cpa(container *data) {
 
-    uint8_t i, j, k;
+    uint8_t i, k;
+    int j;
     uint8_t key[AES_KEY_SIZE];
 
     double hamming[data->nb_probes] = {0};

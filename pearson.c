@@ -78,4 +78,11 @@ static float standard_deviation(float* data, int size)
     float std_dev = sqrt(variance);
 
     return std_dev;
-} 
+}
+
+int main(){
+    float list_a[6] = {0.12890625, -0.005859375, 0.08203125, 0.048828125, 0.126953125, -0.047851563};
+    float list_b[6] = {0.125976563, -0.013671875, 0.07421875, 0.043945313, 0.123046875, -0.053710938};
+    float coef = pearson_correlation(list_a, list_b, 6);
+    printf("%f\n", coef);
+}

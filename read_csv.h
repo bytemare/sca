@@ -43,4 +43,10 @@ void free_data_memory(container *data);
  */
 container* read_data_from_source (const char *filename);
 
+/**
+ * Checks if file is a regular and tries to open a stream on it.
+ * @param filename
+ */
+FILE* check_and_open_file(const char *filename);
+
 #endif /*SCA_2_READ_CSV_H*/

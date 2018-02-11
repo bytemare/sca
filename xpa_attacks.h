@@ -1,7 +1,11 @@
 #ifndef SCA_2_XPA_ATTACKS_H
 #define SCA_2_XPA_ATTACKS_H
 
-#include <>
+#include <stdint.h>
+#include <stdio.h>
+#include <stdlib.h>
+
+#include "read_csv.h"
 
 /**
  * AES SBox with indexes
@@ -26,6 +30,8 @@ static const uint8_t Sbox[256] = {
         0x8c, 0xa1, 0x89, 0x0d, 0xbf, 0xe6, 0x42, 0x68, 0x41, 0x99, 0x2d, 0x0f, 0xb0, 0x54, 0xbb, 0x16  // F
 };
 
-void dpa_2(container *data);
+void dpa(container *data);
+
+void cpa(container *data);
 
 #endif /*SCA_2_XPA_ATTACKS_H*/
