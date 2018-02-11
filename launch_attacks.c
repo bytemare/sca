@@ -26,7 +26,9 @@ int main(int argc, char *argv[]){
     /**
      * Launch DPA attack
      */
+    printf("[i] Launching DPA on dataset...");
     dpa_2(data);
+    printf("[i] DPA completed.\n");
 
 
     /**
