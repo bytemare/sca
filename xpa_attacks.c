@@ -95,3 +95,70 @@ void dpa(container *data){
     free(group[0]);
     free(group[1]);
 }
+
+/**
+ * Compute Hamming weight of a byte
+ * i.e. number of bits different from zero
+ * @param k
+ * @return
+ */
+uint8_t hamming_weight(uint8_t k){
+    uint8_t i = h_w = 0;
+
+    for (; i < 8 ; i++){
+        h_w += k&1;
+        k >>= 1;
+    }
+
+    return h_w;
+}
+
+void cpa(container *data) {
+
+    uint8_t i, j, k;
+    uint8_t key[AES_KEY_SIZE];
+
+    double hamming[AES_KEY_RANGE] = {0};
+    double ref_curve[AES_KEY_RANGE] = {0};
+
+
+    /**
+     * For every byte of the AES key
+     */
+    for (i = 0; i < AES_KEY_SIZE; i++) {
+
+        /**
+         * For every possible value of the current byte of the AES key
+         */
+        for (key[i] = 0; key[i] < AES_KEY_RANGE; key[i]++) {
+
+            for (j = 0; j < data->nb_probes; j++) {
+
+                // 1. Discriminator / Oracle
+                k = Sbox[key[i] ^ data->t_plaintexts[j][i]];
+
+                // 2. Compute Hamming Weight (i.e. number of bits different from zero in byte k)
+                hamming[j] = hamming_weight(k);
+            }
+
+            // 3. Build a reference curve with correlation coefficients
+            ref_curve[key[i]] = correlationCoefficient(data->t_traces[?], hamming);
+        }
+
+        k = 0;
+        for (j = 1; j < AES_KEY_RANGE; j++) {
+            if (ref_curve[j] >= ref_curve[k]) {
+                k = j;
+            }
+        }
+
+        key[i] = k;
+
+        // Clean up memory
+        memset(ref_curve, 0, AES_KEY_RANGE * sizeof(double));
+        memset(hamming, 0, AES_KEY_RANGE * sizeof(double));
+    }
+
+    // Clean up memory and quit
+    memset(key, 0, AES_KEY_SIZE);
+}
