@@ -1,7 +1,3 @@
-//
-// Created by dan on 11/02/18.
-//
-
 #ifndef SCA_2_READ_CSV_H
 #define SCA_2_READ_CSV_H
 

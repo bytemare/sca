@@ -6,6 +6,8 @@
 #include <unistd.h>
 #include <memory.h>
 
+#include <read_csv.h>
+
 #define MAX_LINE_LENGTH 96*(12+1+1)
 #define NB_PLAINTEXT_BYTES 16
 #define NB_DATA_POINTS 96

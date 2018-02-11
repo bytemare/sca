@@ -1,7 +1,3 @@
-//
-// Created by dan on 11/02/18.
-//
-
 #include "xpa_new.h"
 
 uint8_t sbox_oracle(uint8_t key_byte, char
