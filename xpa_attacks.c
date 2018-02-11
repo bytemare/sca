@@ -145,6 +145,8 @@ void cpa(container *data) {
             ref_curve[key[i]] = correlationCoefficient(data->t_traces[?], hamming);
         }
 
+        // 4. Get the outstanding/maximum value out of the reference curve for that byte
+        // This should be our key byte
         k = 0;
         for (j = 1; j < AES_KEY_RANGE; j++) {
             if (ref_curve[j] >= ref_curve[k]) {
