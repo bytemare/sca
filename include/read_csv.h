@@ -1,20 +1,20 @@
 #ifndef SCA_2_READ_CSV_H
 #define SCA_2_READ_CSV_H
 
-#define MAX_LINE_LENGTH 96*(12+1+1)
+#define MAX_LINE_LENGTH (96*(12+1+1))
 #define NB_PLAINTEXT_BYTES 16
 #define NB_DATA_POINTS 96
-#define NB_CHAR_REPR 3
 #define CSV_DELIMITER ','
 
-#define FILENAME "./aes_traces.csv"
-
 typedef struct {
-    unsigned char **t_plaintexts;
-    float **t_traces;
+    uint8_t **t_plaintexts;
+    double **t_traces;
     int nb_datapoints;
     int nb_probes;
 } container;
+
+void print_traces(container *data);
+
 
 /**
  * Initialises container data
@@ -22,7 +22,7 @@ typedef struct {
  * @param data
  * @return
  */
-container* initialise_data_memory(int lines);
+container* initialise_data_memory(uint32_t lines);
 
 /**
  * Frees the memory of input data
@@ -33,11 +33,10 @@ void free_data_memory(container *data);
 
 /**
  * Given a path to filename, reads the file and returns an appropriate buffer containing its content
- * @param filename
- * @param length
+ * @param file
  * @return
  */
-container* read_data_from_source (const char *filename);
+container* read_data_from_source (FILE *file);
 
 /**
  * Checks if file is a regular and tries to open a stream on it.

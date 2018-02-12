@@ -7,6 +7,9 @@
 
 #include "read_csv.h"
 
+#define AES_KEY_SIZE 16
+#define AES_KEY_RANGE 256
+
 /**
  * AES SBox with indexes
  */

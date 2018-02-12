@@ -3,7 +3,6 @@
 
 int main(int argc, char *argv[]){
 
-
     /**
      * Verify file before handling
      */
@@ -19,14 +18,19 @@ int main(int argc, char *argv[]){
      * Load Traces ...
      */
     printf("[i] Loading Traces ...\n");
-    container *data = read_data_from_source(argv[1]);
+    container *data = read_data_from_source(file);
+    if( data == NULL){
+        printf("[ERROR] Could not load traces. Aborting.\n");
+        exit(1);
+    }
+    printf("[i] Loading completed.\n\n");
 
-    printf("[i] Completed.\n\n");
+    // print_traces(data);
 
     /**
      * Launch DPA attack
      */
-    printf("[i] Launching DPA on dataset...");
+    printf("[i] Launching DPA on dataset...\n");
     dpa(data);
     printf("[i] DPA completed.\n");
 

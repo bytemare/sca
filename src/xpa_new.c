@@ -1,6 +1,12 @@
 #include "xpa_new.h"
+#include <math.h>
+#include <memory.h>
 
-uint8_t sbox_oracle(uint8_t key_byte, char
+
+inline uint8_t xpa_sbox_oracle(uint8_t key_byte, uint8_t plain_byte){
+    return Sbox[key_byte ^ plain_byte];
+}
+
 
 /**
  * Update reference curve with key index with DPA attack value
@@ -13,12 +19,14 @@ void dpa_core(uint8_t i, uint8_t *key, double *ref_curve, container *data){
 
     uint8_t j, k, l;
 
-    double *group[2];
-    uint8_t size[2] = { 0 };
+    double max;
     double average[data->nb_probes];
 
-    double group[0] = calloc(sizeof(double)*data->nb_datapoints);
-    double group[1] = calloc(sizeof(double)*data->nb_datapoints);
+    double *group[2];
+    uint8_t size[2] = { 0 };
+
+    group[0] = calloc((size_t)data->nb_datapoints, sizeof(double));
+    group[1] = calloc((size_t)data->nb_datapoints, sizeof(double));
 
     /**
      * Go through all the probes, and add up the datapoints
@@ -27,12 +35,12 @@ void dpa_core(uint8_t i, uint8_t *key, double *ref_curve, container *data){
 
         // 1. Discriminator / Oracle
         // Take most significant bit of first sbox after SubBytes as group discriminator of current trace
-        k = Sbox[key[i] ^ data->t_plaintexts[j][i]] >> 7;
+        k = xpa_sbox_oracle(key[i], data->t_plaintexts[j][i]) >> 7;
 
         // 2. Add up
         // Add up all the datapoints of the entire trace
         for (l = 0; l < data->nb_datapoints; l++) {
-            group[k] += data->t_traces[j][l];
+            group[k][l] += data->t_traces[j][l];
         }
         size[k]++;
     }
@@ -40,7 +48,7 @@ void dpa_core(uint8_t i, uint8_t *key, double *ref_curve, container *data){
     // 3. Statistics
     // Compute average for every group and record the difference
     for (j = 0 ; j < data->nb_probes ; j++){
-        average[j] = fabs( group[0][j]/counter[0] - group[1][j]/counter[1]);
+        average[j] = fabs( group[0][j]/size[0] - group[1][j]/size[1]);
     }
 
     // 4. Get the maxium value
@@ -54,10 +62,6 @@ void dpa_core(uint8_t i, uint8_t *key, double *ref_curve, container *data){
     // 5. Insert it in reference curve
     ref_curve[ key[i] ] = max;
 
-    // Clean up memory
-    memset(group[0], 0, sizeof(double)*data->nb_datapoints);
-    memset(group[1], 0, sizeof(double)*data->nb_datapoints);
-
     free(group[0]);
     free(group[1]);
 }
@@ -69,10 +73,10 @@ void dpa_core(uint8_t i, uint8_t *key, double *ref_curve, container *data){
  * @param k
  * @return
  */
-uint8_t hamming_weight(uint8_t k){
-    uint8_t i = h_w = 0;
+uint8_t xpa_hamming_weight(uint8_t k){
+    uint8_t i, h_w = 0;
 
-    for (; i < 8 ; i++){
+    for (i = 0 ; i < 8 ; i++){
         h_w += k&1;
         k >>= 1;
     }
@@ -90,27 +94,29 @@ uint8_t hamming_weight(uint8_t k){
  */
 void cpa_core(uint8_t i, uint8_t *key, double *ref_curve, container *data){
 
-    uint8_t j, k;
-    double hamming[data->nb_probes] = {0};
+    uint8_t j, k = 0;
+    double *hamming = calloc((size_t)data->nb_probes, sizeof(double));
 
     for (j = 0; j < data->nb_probes; j++) {
 
         // 1. Discriminator / Oracle
-        k = Sbox[key[i] ^ data->t_plaintexts[j][i]];
+        k = xpa_sbox_oracle(key[i], data->t_plaintexts[j][i]);
 
         // 2. Compute Hamming Weight (i.e. number of bits different from zero in byte k)
-        hamming[j] = hamming_weight(k);
+        hamming[j] = xpa_hamming_weight(k);
     }
 
     // 3. Build a reference curve with the maximum correlation coefficients
     ref_curve[ key[i] ] = 0;
-    for(j = 0; j < NB_SAMPLES; j++){
+    for(j = 0; j < data->nb_datapoints; j++){
         // use the absolute value (-1 and 1 are the values at which the correlation is the strongest)
-        k = fabsf(correlationCoefficient(data->t_traces[a], hamming));
+        //k = fabsf(correlationCoefficient(data->t_traces[a], hamming));
         if (k > ref_curve[ key[i] ]){
             ref_curve[ key[i] ] = k;
         }
     }
+
+    free(hamming);
 }
 
 
@@ -126,26 +132,6 @@ void xpa(container *data, char xpa_mode[4]){
     uint8_t key[AES_KEY_SIZE];
 
     double ref_curve[AES_KEY_RANGE] = {0};
-
-
-    /**
-     * Variables used exclusively by DPA
-     */
-    double average[data->nb_probes];
-    double *group[2];
-    uint8_t size[2] = { 0 };
-
-    double group[0] = calloc(sizeof(double)*data->nb_datapoints);
-    double group[1] = calloc(sizeof(double)*data->nb_datapoints);
-
-
-    /**
-     * Variables used exclusively by CPA
-     */
-
-    // double hamming[AES_KEY_RANGE] = {0};
-
-
 
     /**
      * Determine the mode : dpa or cpa
@@ -172,9 +158,9 @@ void xpa(container *data, char xpa_mode[4]){
         for (key[i] = 0; key[i] < AES_KEY_RANGE; key[i]++) {
 
             if (mode == 0) {
-                dpa_core();
+                dpa_core(i, key, ref_curve, data);
             } else {
-                cpa_core(i, &key, &ref_curve, data);
+                cpa_core(i, key, ref_curve, data);
             }
         }
 
