@@ -237,7 +237,7 @@ int read_datapoints_line(int i, FILE *file, container *data, const unsigned char
         return -1;
     }
 
-    data->t_traces[i] = calloc(NB_DATA_POINTS, sizeof(float));
+    data->t_traces[i] = calloc(NB_DATA_POINTS, sizeof(double));
 
     /* get the first token */
     token = strtok(buffer, (const char*)delimiter);
