@@ -16,7 +16,7 @@
  */
 container* initialise_data_memory(uint32_t lines){
 
-    container *data = malloc(sizeof(container));
+    container *data = malloc(sizeof(container*));
 
     if (data == NULL ){
         perror("[ERROR] Could not allocate data structure.");
@@ -197,6 +197,7 @@ int read_plaintext_line(int i, FILE *file, container *data){
         return -1;
     }
 
+    printf("data : %d , i : %d \n", data->nb_probes, i);
     data->t_plaintexts[i] = calloc((size_t)NB_PLAINTEXT_BYTES, sizeof(uint8_t));
     if (data->t_plaintexts[i] == NULL){
         perror("[ERROR] Could not allocate memory for t_plaintexts[i].");
@@ -212,7 +213,7 @@ int read_plaintext_line(int i, FILE *file, container *data){
         }
 
         data->t_plaintexts[i][j] = (uint8_t) p;
-        printf("[%d][%d] : %d\n", i, j, data->t_plaintexts[i][j]);
+        //printf("[%d][%d] : %d\n", i, j, data->t_plaintexts[i][j]);
 
         p = (uint16_t) strtol(token+1, &token, 10);
     }

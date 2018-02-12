@@ -18,4 +18,4 @@ set(SOURCE_FILES
 
 include_directories(include/ src/)
 
-add_executable(sca_2 ${SOURCE_FILES})
+add_executable(xpa_attack ${SOURCE_FILES})

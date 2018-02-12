@@ -9,8 +9,8 @@
 typedef struct {
     uint8_t **t_plaintexts;
     double **t_traces;
-    int nb_datapoints;
-    int nb_probes;
+    uint32_t nb_datapoints;
+    uint32_t nb_probes;
 } container;
 
 void print_traces(container *data);

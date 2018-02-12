@@ -14,7 +14,8 @@ uint8_t sbox_oracle(uint8_t key_byte, uint8_t plain_byte){
  */
 void dpa(container *data){
 
-    uint8_t i, j, k = 0, l;
+    uint8_t i, k = 0;
+    uint32_t j, l;
     uint8_t key[AES_KEY_SIZE];
 
     double ref_curve[AES_KEY_RANGE] = { 0 };
@@ -28,16 +29,13 @@ void dpa(container *data){
     group[0] = calloc((size_t)data->nb_datapoints, sizeof(double));
     group[1] = calloc((size_t)data->nb_datapoints, sizeof(double));
 
-    uint64_t f = 0;
-    uint64_t f_max = (uint64_t)(AES_KEY_SIZE*AES_KEY_RANGE*((data->nb_probes*data->nb_datapoints + 2*data->nb_probes) + AES_KEY_RANGE));
+    // uint64_t f = 0;
+    // uint64_t f_max = (uint64_t)(AES_KEY_SIZE*AES_KEY_RANGE*((data->nb_probes*data->nb_datapoints + 2*data->nb_probes) + AES_KEY_RANGE));
 
     /**
      * For every byte of the AES key
      */
     for (i = 0 ; i < AES_KEY_SIZE ; i++){
-
-        printf("Key %d\n", i);
-        sleep(1);
 
         /**
          * For every possible value of the current byte of the AES key
@@ -57,20 +55,15 @@ void dpa(container *data){
                 // Add up all the datapoints of the entire trace
                 for (l = 0; l < data->nb_datapoints; l++) {
                     group[k][l] += data->t_traces[j][l];
-                    f++;
                 }
                 size[k]++;
-
             }
-            printf("i0 : %d -> key = %d -> %ld / %ld\n", i, key[i], f_max, f);
 
             // 3. Statistics
             // Compute average for every group and record the difference
             for (j = 0 ; j < data->nb_probes ; j++){
                 average[j] = fabs( group[0][j]/size[0] - group[1][j]/size[1]);
-                f++;
             }
-            printf("i1 : %d -> key = %d -> %ld / %ld\n", i, key[i], f_max, f);
 
             // 4. Get the maxium value
             max = average[0];
@@ -78,9 +71,7 @@ void dpa(container *data){
                 if (average[j] > max){
                     max = average[j];
                 }
-                f++;
             }
-            printf("i2 : %d -> key = %d -> %ld / %ld\n", i, key[i], f_max, f);
 
             // 5. Insert it in reference curve
             ref_curve[ key[i] ] = max;
@@ -89,24 +80,19 @@ void dpa(container *data){
             memset(group[0], 0, sizeof(double)*data->nb_datapoints);
             memset(group[1], 0, sizeof(double)*data->nb_datapoints);
 
-            printf("i3 : %d -> key = %d -> %ld / %ld\n", i, key[i], f_max, f);
-            usleep(500);
-            printf("key = %d / %d\n", key[i], AES_KEY_RANGE);
+            if ( key[i] == 255 ){
+                break;
+            }
         }
-
-        printf("NEW K : i2 : %d -> key = %d -> %ld / %ld\n", i, key[i], f_max, f);
-        sleep(10);
 
         // 6. Get the outstanding/maximum value out of the reference curve for that byte
         // This should be our key byte
         k = 0;
         for ( j = 1 ; j < AES_KEY_RANGE ; j++){
             if (ref_curve[j] >= ref_curve[k]){
-                k = j;
+                k = (uint8_t )j;
             }
-            f++;
         }
-        printf("%ld / %ld\n", f_max, f);
 
         key[i] = k;
 
@@ -117,12 +103,17 @@ void dpa(container *data){
     printf("[i] Recovered AES key :\n");
     for (i = 0 ; i < AES_KEY_SIZE ; i++) {
         printf(" %d ", key[i]);
-        f++;
     }
-    printf("%ld / %ld\n", f_max, f);
-
     // Clean up memory and quit
     memset(key, 0, AES_KEY_SIZE);
+
+    printf("g 0 : %p\n", group[1]);
+    if (group[1]){
+        printf("x\n");
+    }
+    else{
+        printf("not x\n");
+    }
 
     free(group[0]);
     free(group[1]);

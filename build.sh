@@ -1,10 +1,12 @@
 #! /bin/sh
 
 BUILD=build
-EXEC=sca_2
-LINK=sca_2
+EXEC=xpa_attack
+LINK=xpa_attack
 
 CREAT="$BUILD"
+
+SAMPLE_FILE=./
 
 rm --force -rf $CREAT
 mkdir -p $BUILD
