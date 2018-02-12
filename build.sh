@@ -1,8 +1,8 @@
 #! /bin/sh
 
 BUILD=build
-EXEC=xpa_attack
-LINK=xpa_attack
+EXEC=sca_2
+LINK=sca_2
 
 CREAT="$BUILD"
 
