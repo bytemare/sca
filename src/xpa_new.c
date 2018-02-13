@@ -3,7 +3,7 @@
 #include <memory.h>
 
 
-inline uint8_t xpa_sbox_oracle(uint8_t key_byte, uint8_t plain_byte){
+uint8_t xpa_sbox_oracle(uint8_t key_byte, uint8_t plain_byte){
     return Sbox[key_byte ^ plain_byte];
 }
 
