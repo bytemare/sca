@@ -12,8 +12,8 @@ set(CMAKE_CXX_STANDARD 11)
 set(SOURCE_FILES
         src/launch_attacks.c
         src/read_csv.c
-        src/xpa_attacks.c)
-        #src/xpa_new.c)
+        src/xpa_attacks.c
+        src/xpa_new.c)
         #src/pearson.c)
 
 include_directories(include/ src/)

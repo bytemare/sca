@@ -14,14 +14,15 @@ uint8_t sbox_oracle(uint8_t key_byte, uint8_t plain_byte){
  */
 void dpa(container *data){
 
-    uint8_t i, k = 0;
-    uint32_t j, l;
+    uint8_t i;
+    uint32_t j, k = 0, l;
     uint8_t key[AES_KEY_SIZE];
 
     double ref_curve[AES_KEY_RANGE] = { 0 };
 
     double max;
-    double average[data->nb_probes];
+    //double average[data->nb_probes];
+    double *average = calloc((size_t)data->nb_probes, sizeof(double));
 
     double *group[2];
     uint8_t size[2] = { 0 };
@@ -76,6 +77,8 @@ void dpa(container *data){
             // 5. Insert it in reference curve
             ref_curve[ key[i] ] = max;
 
+            //printf("dpa rc : %.10g", max);
+
             // Clean up memory
             memset(group[0], 0, sizeof(double)*data->nb_datapoints);
             memset(group[1], 0, sizeof(double)*data->nb_datapoints);
@@ -90,15 +93,17 @@ void dpa(container *data){
         k = 0;
         for ( j = 1 ; j < AES_KEY_RANGE ; j++){
             if (ref_curve[j] >= ref_curve[k]){
-                k = (uint8_t )j;
+                k = j;
             }
         }
 
-        key[i] = k;
+        key[i] = (uint8_t)k;
 
         // Clean up memory
         memset(ref_curve, 0, AES_KEY_RANGE*sizeof(double));
     }
+
+    printf("\n");
 
     printf("[i] Recovered AES key :\n");
     for (i = 0 ; i < AES_KEY_SIZE ; i++) {
@@ -107,16 +112,9 @@ void dpa(container *data){
     // Clean up memory and quit
     memset(key, 0, AES_KEY_SIZE);
 
-    printf("g 0 : %p\n", group[1]);
-    if (group[1]){
-        printf("x\n");
-    }
-    else{
-        printf("not x\n");
-    }
-
     free(group[0]);
     free(group[1]);
+    free(average);
 }
 
 /**
@@ -143,8 +141,8 @@ uint8_t hamming_weight(uint8_t k){
  */
 void cpa(container *data) {
 
-    uint8_t i, k = 0, l, max;
-    uint32_t j;
+    uint8_t i, k = 0;
+    uint32_t j, l, max;
     uint8_t key[AES_KEY_SIZE];
 
     double ref_curve[AES_KEY_RANGE] = {0};
@@ -184,6 +182,10 @@ void cpa(container *data) {
                     ref_curve[ key[i] ] = k;
                 }
             }
+
+            if ( key[i] == 255 ){
+                break;
+            }
         }
 
         // 4. Get the outstanding/maximum value out of the reference curve for that byte
@@ -195,11 +197,16 @@ void cpa(container *data) {
             }
         }
 
-        key[i] = max;
+        key[i] = (uint8_t)max;
 
         // Clean up memory
         memset(ref_curve, 0, AES_KEY_RANGE * sizeof(double));
         memset(hamming, 0, AES_KEY_RANGE * sizeof(double));
+    }
+
+    printf("[i] Recovered AES key :\n");
+    for (i = 0 ; i < AES_KEY_SIZE ; i++) {
+        printf(" %d ", key[i]);
     }
 
     // Clean up memory and quit

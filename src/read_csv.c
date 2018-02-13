@@ -197,7 +197,6 @@ int read_plaintext_line(int i, FILE *file, container *data){
         return -1;
     }
 
-    printf("data : %d , i : %d \n", data->nb_probes, i);
     data->t_plaintexts[i] = calloc((size_t)NB_PLAINTEXT_BYTES, sizeof(uint8_t));
     if (data->t_plaintexts[i] == NULL){
         perror("[ERROR] Could not allocate memory for t_plaintexts[i].");
@@ -231,7 +230,7 @@ int read_datapoints_line(int i, FILE *file, container *data, const unsigned char
     int j;
     char *token;
     char buffer[MAX_LINE_LENGTH];
-    double yo;
+
     /* Get the line */
     if ( get_line(buffer, file) < 0){
         return -1;

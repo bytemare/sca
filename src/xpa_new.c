@@ -17,10 +17,11 @@ inline uint8_t xpa_sbox_oracle(uint8_t key_byte, uint8_t plain_byte){
  */
 void dpa_core(uint8_t i, uint8_t *key, double *ref_curve, container *data){
 
-    uint8_t j, k, l;
+    uint8_t k;
+    uint32_t j, l;
 
     double max;
-    double average[data->nb_probes];
+    double *average = calloc((size_t)data->nb_probes, sizeof(double));
 
     double *group[2];
     uint8_t size[2] = { 0 };
@@ -62,8 +63,11 @@ void dpa_core(uint8_t i, uint8_t *key, double *ref_curve, container *data){
     // 5. Insert it in reference curve
     ref_curve[ key[i] ] = max;
 
+    //printf("dpa rc : %.10g", max);
+
     free(group[0]);
     free(group[1]);
+    free(average);
 }
 
 
@@ -94,7 +98,9 @@ uint8_t xpa_hamming_weight(uint8_t k){
  */
 void cpa_core(uint8_t i, uint8_t *key, double *ref_curve, container *data){
 
-    uint8_t j, k = 0;
+    uint8_t k = 0;
+    uint32_t j;
+
     double *hamming = calloc((size_t)data->nb_probes, sizeof(double));
 
     for (j = 0; j < data->nb_probes; j++) {
@@ -128,7 +134,8 @@ void cpa_core(uint8_t i, uint8_t *key, double *ref_curve, container *data){
  */
 void xpa(container *data, char xpa_mode[4]){
 
-    uint8_t i, j, k, mode;
+    uint8_t i, mode;
+    uint16_t k, j;
     uint8_t key[AES_KEY_SIZE];
 
     double ref_curve[AES_KEY_RANGE] = {0};
@@ -162,6 +169,10 @@ void xpa(container *data, char xpa_mode[4]){
             } else {
                 cpa_core(i, key, ref_curve, data);
             }
+
+            if ( key[i] == 255 ){
+                break;
+            }
         }
 
         // Get the outstanding/maximum value out of the reference curve for that byte
@@ -173,10 +184,16 @@ void xpa(container *data, char xpa_mode[4]){
             }
         }
 
-        key[i] = k;
+        key[i] = (uint8_t)k;
 
         // Clean up memory
         memset(ref_curve, 0, AES_KEY_RANGE * sizeof(double));
+    }
+    printf("\n");
+
+    printf("[i] Recovered AES key :\n");
+    for (i = 0 ; i < AES_KEY_SIZE ; i++) {
+        printf(" %d ", key[i]);
     }
 
     // Clean up memory and quit
