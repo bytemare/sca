@@ -14,7 +14,7 @@
  * @param data
  * @return
  */
-container* initialise_data_memory(uint32_t lines){
+container* initialise_data_memory(uint32_t lines, uint32_t datapoints){
 
     container *data = malloc(sizeof(container*));
 
@@ -25,7 +25,7 @@ container* initialise_data_memory(uint32_t lines){
 
     uint nb_probes = lines / 2;
     data->nb_probes = nb_probes;
-    data->nb_datapoints = NB_DATA_POINTS;
+    data->nb_datapoints = datapoints;
 
     data->t_plaintexts = malloc( nb_probes * sizeof(uint8_t *));
     if (data->t_plaintexts == NULL){
@@ -77,7 +77,7 @@ void print_traces(container *data){
 
     printf("traces : %d\n", data->nb_probes);
     for( i = 0 ; i < data->nb_probes ; ++i){
-        for ( j = 0 ; j < NB_PLAINTEXT_BYTES; j++){
+        for ( j = 0 ; j < data->nb_probes; j++){
             printf("%d ", data->t_plaintexts[i][j]);
         }
         printf("\n");
@@ -86,7 +86,7 @@ void print_traces(container *data){
 
     printf("points : %d\n", data->nb_datapoints);
     for( i = 0 ; i < data->nb_probes ; ++i){
-        for ( j = 0 ; j < NB_DATA_POINTS; j++){
+        for ( j = 0 ; j < data->nb_datapoints; j++){
             printf("[%d][%d] : %.10g,  ", i, j, data->t_traces[i][j]);
         }
         printf("\n");
@@ -153,6 +153,7 @@ uint32_t count_lines(FILE *file){
     return lines;
 }
 
+
 /**
  * Reads a line from file and inserts it into buffer.
  * Buffer must be freed after final use
@@ -161,10 +162,15 @@ uint32_t count_lines(FILE *file){
  */
 int get_line(char *buffer, FILE *file){
 
-    size_t line_length;
+    size_t len;
+    ssize_t line_length;
+
+    line_length = getline(&buffer, &len, file);
+
+    return (int)line_length;
 
     /* Get the line */
-    fgets(buffer, MAX_LINE_LENGTH, file);
+    /*fgets(buffer, MAX_LINE_LENGTH, file);
     if( strlen(buffer) == 1)
         return -1;
 
@@ -175,7 +181,56 @@ int get_line(char *buffer, FILE *file){
     }
     buffer[MAX_LINE_LENGTH-1] = '\0';
 
-    return 0;
+    //return 0;
+
+
+    char *line = NULL;
+    size_t len = 0;
+
+    while ((read = getline(&line, &len, file)) != -1) {
+        printf("Retrieved line of length %zu :\n", line_length);
+        printf("%s", line);
+    }
+
+    free(line);*/
+
+
+
+}
+
+
+/**
+ * Counts the number of
+ * @param line
+ * @return
+ */
+uint32_t count_datapoints(FILE *file, const unsigned char *delimiter){
+
+    uint32_t i, j;
+    char *s, *buffer = NULL;
+
+    size_t len;
+    ssize_t line_length = 0;
+
+    for ( i = 0 ; i < 2 ; i++){
+        if ((line_length = getline(&buffer, &len, file)) == -1){
+            perror("[ERROR] in reading line.");
+            buffer ? free(buffer): NULL;
+            return 0;
+        }
+    }
+
+    s = buffer;
+
+    for ( i = 0, j = 0; (s[i] != '\0') != 0 ; s[i]== *delimiter ? j++, i++ : i++){
+        NULL;//printf("i : %d\t %c %p\n", i, s[i], s);
+    }
+    i++;
+
+    rewind(file);
+    free(buffer);
+
+    return i;
 }
 
 /**
@@ -190,16 +245,30 @@ int read_plaintext_line(int i, FILE *file, container *data){
     int j;
     uint16_t p;
     char *token;
-    char buffer[MAX_LINE_LENGTH];
+    //char buffer[MAX_LINE_LENGTH];
+    char *buffer = NULL;
+
+    size_t len;
+
+    if ( getline(&buffer, &len, file) == -1){
+        perror("[ERROR] in reading line.");
+        buffer ? free(buffer): NULL;
+        return -2;
+    }
+
+
+
+    // check for error here
 
     /* Get the line */
-    if ( get_line(buffer, file) < 0 ){
+    /*if ( get_line(buffer, file) < 0 ){
         return -1;
-    }
+    }*/
 
     data->t_plaintexts[i] = calloc((size_t)NB_PLAINTEXT_BYTES, sizeof(uint8_t));
     if (data->t_plaintexts[i] == NULL){
         perror("[ERROR] Could not allocate memory for t_plaintexts[i].");
+        free(buffer);
         return -2;
     }
 
@@ -207,7 +276,8 @@ int read_plaintext_line(int i, FILE *file, container *data){
     for ( j = 0 ; j < NB_PLAINTEXT_BYTES && p != 0 ; j++){
 
         if ( p > 255 ){
-            printf("[ERROR] Invalid value for plaintext entry : '%d'\n", p);
+            printf("[ERROR] Invalid value for plaintext entry on line %d : '%d'\n", i, p);
+            free(buffer);
             return -2;
         }
 
@@ -216,6 +286,8 @@ int read_plaintext_line(int i, FILE *file, container *data){
 
         p = (uint16_t) strtol(token+1, &token, 10);
     }
+
+    free(buffer);
 }
 
 /**
@@ -229,17 +301,28 @@ int read_datapoints_line(int i, FILE *file, container *data, const unsigned char
 
     int j;
     char *token;
-    char buffer[MAX_LINE_LENGTH];
+    //char buffer[MAX_LINE_LENGTH];
 
-    /* Get the line */
-    if ( get_line(buffer, file) < 0){
-        return -1;
+    char *buffer = NULL;
+
+    size_t len;
+
+    if ( getline(&buffer, &len, file) == -1){
+        perror("[ERROR] in reading line.");
+        buffer ? free(buffer): NULL;
+        return -2;
     }
 
-    data->t_traces[i] = calloc(NB_DATA_POINTS, sizeof(double));
+    /* Get the line */
+    //if ( get_line(buffer, file) < 0){
+    //    return -1;
+    //}
+
+    data->t_traces[i] = calloc(data->nb_datapoints, sizeof(double));
 
     /* get the first token */
     token = strtok(buffer, (const char*)delimiter);
+    //printf("%s \n", token);
 
     /* walk through other tokens */
     j = 0;
@@ -251,7 +334,7 @@ int read_datapoints_line(int i, FILE *file, container *data, const unsigned char
             continue;
         }
 
-        if (j >= NB_DATA_POINTS) {
+        if (j >= data->nb_datapoints) {
             printf("Error : overflowed data points.\n");
             break;
         }
@@ -261,6 +344,7 @@ int read_datapoints_line(int i, FILE *file, container *data, const unsigned char
 
         /* Read next token */
         token = strtok(NULL, (const char*)delimiter);
+        //printf("%s \n", token);
     }
 }
 
@@ -275,27 +359,38 @@ int read_datapoints_line(int i, FILE *file, container *data, const unsigned char
 container* read_data_from_source (FILE *file){
 
     int i, ret;
-    uint32_t lines;
-    container *data;
+    uint32_t lines, datapoints;
+    container *data = NULL;
     const unsigned char delimiter = CSV_DELIMITER;
 
     /**
-     * Count the number of lines
+     * Count the number of lines and datapoints
      */
     lines = count_lines(file);
 
     if ( lines % 2 != 0 ){
-        printf("Error : uneven number of lines ! Found : %d.\n", lines);
+        printf("[ERROR] Uneven number of lines ! Found : %d.\n", lines);
+        free_data_memory(data);
         fclose(file);
         return NULL;
     }
 
     printf("[i] Found %d traces.\n", lines/2);
 
+    datapoints = count_datapoints(file, &delimiter);
+    if( datapoints == 0 ){
+        printf("[ERROR] Could not get number of datapoints.\n");
+        free_data_memory(data);
+        fclose(file);
+        return NULL;
+    }
+
+    printf("[i] Found %d datapoints.\n", datapoints);
+
     /**
      * Allocate memory for our data structures
      */
-    data = initialise_data_memory(lines);
+    data = initialise_data_memory(lines, datapoints);
     if ( data == NULL ){
         fclose(file);
         return NULL;
@@ -312,7 +407,7 @@ container* read_data_from_source (FILE *file){
          */
         ret = read_plaintext_line(i, file, data);
         /*for( k = 0 ; k < i ; ++k){
-            for ( j = 0 ; j < NB_PLAINTEXT_BYTES; j++){
+            for ( j = 0 ; j < data->nb_probes; j++){
                 printf("%d ", data->t_plaintexts[k][j]);
             }
             printf("\n");
@@ -332,8 +427,8 @@ container* read_data_from_source (FILE *file){
         }
 
         ret = read_datapoints_line(i, file, data, &delimiter);
-        /*for( k = 0 ; k < i ; ++k){
-            for ( j = 0 ; j < NB_DATA_POINTS; j++){
+        /*for( k = 0 ; k <= i ; ++k){
+            for ( j = 0 ; j < data->nb_datapoints; j++){
                 printf("%.10g ", data->t_traces[k][j]);
             }
             printf("\n");

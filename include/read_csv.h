@@ -1,9 +1,9 @@
 #ifndef SCA_2_READ_CSV_H
 #define SCA_2_READ_CSV_H
 
-#define MAX_LINE_LENGTH (96*(12+1+1))
+#define MAX_LINE_LENGTH 2000000 //(1992*(12+1+1))
 #define NB_PLAINTEXT_BYTES 16
-#define NB_DATA_POINTS 96
+#define NB_DATA_POINTS 2200
 #define CSV_DELIMITER ','
 
 typedef struct {
@@ -22,7 +22,7 @@ void print_traces(container *data);
  * @param data
  * @return
  */
-container* initialise_data_memory(uint32_t lines);
+container* initialise_data_memory(uint32_t lines, uint32_t datapoints);
 
 /**
  * Frees the memory of input data

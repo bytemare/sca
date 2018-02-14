@@ -13,7 +13,8 @@ set(SOURCE_FILES
         src/launch_attacks.c
         src/read_csv.c
         src/xpa_attacks.c
-        src/xpa_new.c)
+        src/xpa_new.c
+        src/cpa_write.c)
         #src/pearson.c)
 
 include_directories(include/ src/)
