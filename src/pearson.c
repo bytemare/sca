@@ -8,76 +8,84 @@ static float arithmetic_mean(float* data, int size);
 static float mean_of_products(float* data1, float* data2, int size);
 static float standard_deviation(float* data, int size);
 
-//--------------------------------------------------------
-// FUNCTION pearson_correlation
-//--------------------------------------------------------
+/**
+ * returns pearson correlation coefficient given 2 lists of floats
+ * @param float* X, float* Y
+ * @param int size
+ * @return float
+ */
 float pearson_correlation(float* X, float* Y, int size)
 {
-    float rho;
+    float pearson;
+    float tmp_X = 0, tmp_Y = 0, tot = 0;
 
-    // covariance
-    float independent_mean = arithmetic_mean(X, size);
-    float dependent_mean = arithmetic_mean(Y, size);
-    float products_mean = mean_of_products(X, Y, size);
-    float covariance = products_mean - (independent_mean * dependent_mean);
+    float EX;
+    float EY;
+    float EXY;
+    float covariance;
+    float X_deviation;
+    float Y_deviation;
+
+    for(int i = 0; i < size; i++){
+        tmp_X += X[i];
+        tmp_Y += Y[i];
+    }
+    EX = tmp_X / size;
+    EY = tmp_Y / size;
+
+    for(int i = 0; i < size; i++){
+        tot += (X[i] * Y[i]);
+    }
+
+    EXY = tot / size;
+
+    covariance = EXY - (EX * EY);
 
     // standard deviations of independent values
-    float independent_standard_deviation = standard_deviation(X, size);
+    X_deviation = standard_deviation(X, size);
 
     // standard deviations of dependent values
-    float dependent_standard_deviation = standard_deviation(Y, size);
+    Y_deviation = standard_deviation(Y, size);
 
     // Pearson Correlation Coefficient
-    rho = covariance / (independent_standard_deviation * dependent_standard_deviation);
+    pearson = covariance / (X_deviation * Y_deviation);
 
-    return rho;
+    printf("EX %f\nEY %f\nEXY %f\ncov %f\nX dev %f\nY dev %f\n", EX, EY, EXY, covariance, X_deviation, Y_deviation);
+
+    return pearson;
 }
 
-//--------------------------------------------------------
-// FUNCTION arithmetic_mean
-//--------------------------------------------------------
-static float arithmetic_mean(float* data, int size)
-{
-    float total = 0;
 
-    // note that incrementing total is done within the for loop
-    for(int i = 0; i < size; total += data[i], i++);
-
-    return total / size;
-}
-
-//--------------------------------------------------------
-// FUNCTION mean_of_products
-//--------------------------------------------------------
-static float mean_of_products(float* data1, float* data2, int size)
-{
-    float total = 0;
-
-    // note that incrementing total is done within the for loop
-    for(int i = 0; i < size; total += (data1[i] * data2[i]), i++);
-
-    return total / size;
-}
-
-//--------------------------------------------------------
-// FUNCTION standard_deviation
-//--------------------------------------------------------
 static float standard_deviation(float* data, int size)
 {
     float squares[size];
+    float mean_of_squares;
+    float mean;
+    float square_of_mean;
+    float variance;
+    float res;
+    float tmp = 0;
 
     for(int i = 0; i < size; i++)
     {
         squares[i] = pow(data[i], 2);
+        tmp += data[i];
     }
+    mean = tmp / size;
+    square_of_mean = pow(mean, 2);
 
-    float mean_of_squares = arithmetic_mean(squares, size);
-    float mean = arithmetic_mean(data, size);
-    float square_of_mean = pow(mean, 2);
-    float variance = mean_of_squares - square_of_mean;
-    float std_dev = sqrt(variance);
+    tmp = 0;
 
-    return std_dev;
+    for(int i = 0; i < size; i++)
+    {
+        tmp += squares[i] = pow(data[i], 2);
+    }
+    mean_of_squares = tmp / size;
+
+    variance = mean_of_squares - square_of_mean;
+    res = sqrt(variance);
+
+    return res;
 }
 
 int main(){
