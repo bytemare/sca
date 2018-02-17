@@ -11,7 +11,7 @@ SAMPLE_FILE=./
 rm --force -rf $CREAT
 mkdir -p $BUILD
 cd $BUILD
-cmake ..
+cmake -DCMAKE_BUILD_TYPE=Debug ..
 make
 cd ..
 ln -s ./$BUILD/$EXEC $LINK

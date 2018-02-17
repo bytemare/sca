@@ -3,28 +3,30 @@
 #include <stdio.h>
 #include <string.h>
 #include <math.h>
+#include "pearson.h"
 
-static float arithmetic_mean(float* data, int size);
-static float mean_of_products(float* data1, float* data2, int size);
-static float standard_deviation(float* data, int size);
+static double standard_deviation(double* data, int size);
 
 /**
- * returns pearson correlation coefficient given 2 lists of floats
- * @param float* X, float* Y
+ * returns pearson correlation coefficient given 2 lists of doubles
+ * @param double* X, double* Y
  * @param int size
- * @return float
+ * @return double
  */
-float pearson_correlation(float* X, float* Y, int size)
-{
-    float pearson;
-    float tmp_X = 0, tmp_Y = 0, tot = 0;
 
-    float EX;
-    float EY;
-    float EXY;
-    float covariance;
-    float X_deviation;
-    float Y_deviation;
+// tested independently : works
+// changed type from double to double to facilitate integration of the code
+double pearson_correlation(double* X, double* Y, int size)
+{
+    double pearson;
+    double tmp_X = 0, tmp_Y = 0, tot = 0;
+
+    double EX;
+    double EY;
+    double EXY;
+    double covariance;
+    double X_deviation;
+    double Y_deviation;
 
     for(int i = 0; i < size; i++){
         tmp_X += X[i];
@@ -50,21 +52,19 @@ float pearson_correlation(float* X, float* Y, int size)
     // Pearson Correlation Coefficient
     pearson = covariance / (X_deviation * Y_deviation);
 
-    printf("EX %f\nEY %f\nEXY %f\ncov %f\nX dev %f\nY dev %f\n", EX, EY, EXY, covariance, X_deviation, Y_deviation);
-
     return pearson;
 }
 
 
-static float standard_deviation(float* data, int size)
+static double standard_deviation(double* data, int size)
 {
-    float squares[size];
-    float mean_of_squares;
-    float mean;
-    float square_of_mean;
-    float variance;
-    float res;
-    float tmp = 0;
+    double squares[size];
+    double mean_of_squares;
+    double mean;
+    double square_of_mean;
+    double variance;
+    double res;
+    double tmp = 0;
 
     for(int i = 0; i < size; i++)
     {
@@ -88,9 +88,9 @@ static float standard_deviation(float* data, int size)
     return res;
 }
 
-int main(){
-    float list_a[6] = {0.12890625, -0.005859375, 0.08203125, 0.048828125, 0.126953125, -0.047851563};
-    float list_b[6] = {0.125976563, -0.013671875, 0.07421875, 0.043945313, 0.123046875, -0.053710938};
-    float coef = pearson_correlation(list_a, list_b, 6);
+/*int main(){
+    double list_a[6] = {0.12890625, -0.005859375, 0.08203125, 0.048828125, 0.126953125, -0.047851563};
+    double list_b[6] = {0.125976563, -0.013671875, 0.07421875, 0.043945313, 0.123046875, -0.053710938};
+    double coef = pearson_correlation(list_a, list_b, 6);
     printf("%f\n", coef);
-}
+}*/

@@ -3,6 +3,7 @@
 #include <math.h>
 #include <xpa_attacks.h>
 #include <memory.h>
+#include "pearson.h"
 
 uint8_t sbox_oracle(uint8_t key_byte, uint8_t plain_byte){
     return Sbox[key_byte ^ plain_byte];
@@ -143,7 +144,7 @@ void cpa(container *data) {
 
     double ref_curve[AES_KEY_RANGE] = {0};
 
-    double *hamming = calloc((size_t)data->nb_probes, sizeof(double));
+    double *hamming = calloc((size_t)data->nb_probes, sizeof(float));
 
 
     /**
@@ -166,17 +167,16 @@ void cpa(container *data) {
             }
 
             // 3. Build a reference curve with correlation coefficients
-            //ref_curve[key[i]] = correlationCoefficient(data->t_traces[?], hamming);
+            //ref_curve[key[i]] = pearson_correlation(data->t_traces[?], hamming);
 
 
             // 3.b Store all the correlation coefficients of the samples
             ref_curve[ key[i] ] = 0;
-            for(j = 0; j < data->nb_datapoints; j++){
-                // use the absolute value (-1 and 1 are the values at which the correlation is the strongest)
-                //k = fabsf(correlationCoefficient(data->t_traces[a], hamming));
-                if (k > ref_curve[ key[i] ]){
-                    ref_curve[ key[i] ] = k;
-                }
+            // use the absolute value (-1 and 1 are the values at which the correlation is the strongest)
+            // calculation made for each key guess [i]
+            k = fabsf(pearson_correlation(data->t_traces[i], hamming, data->nb_probes));
+            if (k > ref_curve[ key[i] ]){
+                ref_curve[ key[i] ] = k;
             }
 
             if ( key[i] == 255 ){

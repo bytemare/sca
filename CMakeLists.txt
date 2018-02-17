@@ -14,9 +14,10 @@ set(SOURCE_FILES
         src/read_csv.c
         src/xpa_attacks.c
         src/xpa_new.c
-        src/cpa_write.c)
-        #src/pearson.c)
+        src/cpa_write.c
+        src/pearson.c)
 
 include_directories(include/ src/)
 
 add_executable(xpa_attack ${SOURCE_FILES})
+target_link_libraries(xpa_attack m)
