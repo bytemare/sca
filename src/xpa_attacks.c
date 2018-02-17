@@ -177,13 +177,11 @@ void cpa(container *data) {
 
             // 3.b Store all the correlation coefficients of the samples
             ref_curve[ key[i] ] = 0;
-            for(j = 0; j < data->nb_probes; j++){
-                // use the absolute value (-1 and 1 are the values at which the correlation is the strongest)
-                // calculation made for each key guess [i]
-                k = fabsf(pearson_correlation(data->t_traces[i], hamming, data->nb_probes));
-                if (k > ref_curve[ key[i] ]){
-                    ref_curve[ key[i] ] = k;
-                }
+            // use the absolute value (-1 and 1 are the values at which the correlation is the strongest)
+            // calculation made for each key guess [i]
+            k = fabsf(pearson_correlation(data->t_traces[i], hamming, data->nb_probes));
+            if (k > ref_curve[ key[i] ]){
+                ref_curve[ key[i] ] = k;
             }
 
             if ( key[i] == 255 ){
