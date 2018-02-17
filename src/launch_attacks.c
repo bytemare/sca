@@ -1,4 +1,5 @@
 #include <xpa_attacks.h>
+#include <read_csv.h>
 #include <xpa_new.h>
 
 
@@ -32,8 +33,6 @@ int main(int argc, char *argv[]){
     }
     printf("[i] Loading completed.\n\n");
 
-    // print_traces(data);
-
     /**
      * Launch DPA attack
      */
@@ -54,6 +53,8 @@ int main(int argc, char *argv[]){
 
 
     free_data_memory(data);
+
+    printf("[i] Testing factorised code ...\n");
 
     /**
      * Verify file before handling

@@ -8,53 +8,43 @@ uint8_t sbox_oracle(uint8_t key_byte, uint8_t plain_byte){
     return Sbox[key_byte ^ plain_byte];
 }
 
-/**
- * DPA attack on given dataset
- * @param data
- */
-void dpa(container *data){
 
-    uint8_t i;
-    uint32_t j, k = 0, l;
-    uint8_t key[AES_KEY_SIZE];
+void dpa(container * data){
 
-    double ref_curve[AES_KEY_RANGE] = { 0 };
+    uint8_t i, k, key[AES_KEY_SIZE];
+    uint32_t j, l;
 
     double max;
-    //double average[data->nb_probes];
-    double *average = calloc((size_t)data->nb_probes, sizeof(double));
+    double ref_curve[AES_KEY_RANGE] = {0};
+    double *average = calloc(data->nb_datapoints, sizeof(double));
 
     double *group[2];
-    uint8_t size[2] = { 0 };
+    int size[2] = {0};
 
     group[0] = calloc((size_t)data->nb_datapoints, sizeof(double));
     group[1] = calloc((size_t)data->nb_datapoints, sizeof(double));
 
-    // uint64_t f = 0;
-    // uint64_t f_max = (uint64_t)(AES_KEY_SIZE*AES_KEY_RANGE*((data->nb_probes*data->nb_datapoints + 2*data->nb_probes) + AES_KEY_RANGE));
-
     /**
      * For every byte of the AES key
      */
-    for (i = 0 ; i < AES_KEY_SIZE ; i++){
+    for ( i = 0 ; i < AES_KEY_SIZE ; i++ ){
 
         /**
          * For every possible value of the current byte of the AES key
          */
-        for (key[i] = 0 ; key[i] < AES_KEY_RANGE ; key[i]++){
+        for( key[i] = 0 ; key[i] < AES_KEY_RANGE ; key[i]++){
 
             /**
              * Go through all the probes, and add up the datapoints
              */
-            for (j = 0 ; j < data->nb_probes ; j++) {
+            for( j = 0 ; j < data->nb_probes ; j++){
 
                 // 1. Discriminator / Oracle
-                // Take most significant bit of first sbox after SubBytes as group discriminator of current trace
                 k = sbox_oracle(key[i], data->t_plaintexts[j][i]) >> 7;
 
                 // 2. Add up
                 // Add up all the datapoints of the entire trace
-                for (l = 0; l < data->nb_datapoints; l++) {
+                for( l = 0 ; l < data->nb_datapoints ; l++){
                     group[k][l] += data->t_traces[j][l];
                 }
                 size[k]++;
@@ -62,30 +52,32 @@ void dpa(container *data){
 
             // 3. Statistics
             // Compute average for every group and record the difference
-            for (j = 0 ; j < data->nb_probes ; j++){
+            for (j = 0 ; j < data->nb_datapoints ; j++){
                 average[j] = fabs( group[0][j]/size[0] - group[1][j]/size[1]);
             }
 
             // 4. Get the maxium value
             max = average[0];
-            for (j = 1 ; j < data->nb_probes ; j++){
+            for (j = 1 ; j < data->nb_datapoints ; j++){
                 if (average[j] > max){
                     max = average[j];
                 }
             }
 
             // 5. Insert it in reference curve
-            ref_curve[ key[i] ] = max;
+            ref_curve[key[i]] = max;
 
-            //printf("dpa rc : %.10g", max);
+            // Reset up memory
+            memset(group[0], 0, sizeof(double) * data->nb_datapoints);
+            memset(group[1], 0, sizeof(double) * data->nb_datapoints);
+            size[0] = 0;
+            size[1] = 0;
 
-            // Clean up memory
-            memset(group[0], 0, sizeof(double)*data->nb_datapoints);
-            memset(group[1], 0, sizeof(double)*data->nb_datapoints);
-
-            if ( key[i] == 255 ){
+            // uint8_t overflows in this loop, so this is trap to quit last round
+            if ( key[i] == AES_KEY_RANGE - 1 ){
                 break;
             }
+
         }
 
         // 6. Get the outstanding/maximum value out of the reference curve for that byte
@@ -93,23 +85,25 @@ void dpa(container *data){
         k = 0;
         for ( j = 1 ; j < AES_KEY_RANGE ; j++){
             if (ref_curve[j] >= ref_curve[k]){
-                k = j;
+                k = (uint8_t)j;
             }
         }
 
-        key[i] = (uint8_t)k;
+        key[i] = k;
+
         printf("[i] Key[%d] : 0x%2.2x\n", i, key[i]);
 
         // Clean up memory
-        memset(ref_curve, 0, AES_KEY_RANGE*sizeof(double));
+        memset(ref_curve, 0, sizeof(ref_curve));
     }
 
-    printf("\n");
 
     printf("[i] Recovered AES key :\n");
     for (i = 0 ; i < AES_KEY_SIZE ; i++) {
         printf(" %d ", key[i]);
     }
+
+
     // Clean up memory and quit
     memset(key, 0, AES_KEY_SIZE);
 
@@ -117,6 +111,7 @@ void dpa(container *data){
     free(group[1]);
     free(average);
 }
+
 
 /**
  * Compute Hamming weight of a byte

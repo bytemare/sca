@@ -1,20 +1,15 @@
 #ifndef SCA_2_READ_CSV_H
 #define SCA_2_READ_CSV_H
 
-#define MAX_LINE_LENGTH 2000000 //(1992*(12+1+1))
-#define NB_PLAINTEXT_BYTES 16
-#define NB_DATA_POINTS 2200
-#define CSV_DELIMITER ','
-
-typedef struct {
-    uint8_t **t_plaintexts;
-    double **t_traces;
-    uint32_t nb_datapoints;
-    uint32_t nb_probes;
-} container;
+#include <constants.h>
 
 void print_traces(container *data);
 
+/**
+ * Checks if file is a regular and tries to open a stream on it.
+ * @param filename
+ */
+FILE* check_and_open_file(const char *filename);
 
 /**
  * Initialises container data

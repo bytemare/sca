@@ -71,7 +71,10 @@ void free_data_memory(container *data){
     free(data);
 }
 
-
+/**
+ * Debug Function to print read data
+ * @param data
+ */
 void print_traces(container *data){
     int i, j;
 
@@ -155,75 +158,30 @@ uint32_t count_lines(FILE *file){
 
 
 /**
- * Reads a line from file and inserts it into buffer.
- * Buffer must be freed after final use
- * @param buffer
- * @param file
- */
-int get_line(char *buffer, FILE *file){
-
-    size_t len;
-    ssize_t line_length;
-
-    line_length = getline(&buffer, &len, file);
-
-    return (int)line_length;
-
-    /* Get the line */
-    /*fgets(buffer, MAX_LINE_LENGTH, file);
-    if( strlen(buffer) == 1)
-        return -1;
-
-    line_length = strlen(buffer);
-
-    if (line_length >= MAX_LINE_LENGTH){
-        printf("[ERROR] Potential overflow of line length. Please increase MAX_LINE_LENGTH.\n");
-    }
-    buffer[MAX_LINE_LENGTH-1] = '\0';
-
-    //return 0;
-
-
-    char *line = NULL;
-    size_t len = 0;
-
-    while ((read = getline(&line, &len, file)) != -1) {
-        printf("Retrieved line of length %zu :\n", line_length);
-        printf("%s", line);
-    }
-
-    free(line);*/
-
-
-
-}
-
-
-/**
  * Counts the number of
  * @param line
  * @return
  */
 uint32_t count_datapoints(FILE *file, const unsigned char *delimiter){
 
-    uint32_t i, j;
+    uint32_t i = 0;
     char *s, *buffer = NULL;
 
     size_t len;
-    ssize_t line_length = 0;
 
     for ( i = 0 ; i < 2 ; i++){
-        if ((line_length = getline(&buffer, &len, file)) == -1){
+        if ( getline(&buffer, &len, file) == -1){
             perror("[ERROR] in reading line.");
             buffer ? free(buffer): NULL;
             return 0;
         }
     }
 
-    s = buffer;
-
-    for ( i = 0, j = 0; (s[i] != '\0') != 0 ; s[i]== *delimiter ? j++, i++ : i++){
-        NULL;//printf("i : %d\t %c %p\n", i, s[i], s);
+    s = strchr(buffer,*delimiter);
+    while (s!=NULL)
+    {
+        i++;
+        s = strchr( s + 1, *delimiter);
     }
     i++;
 
@@ -399,7 +357,7 @@ container* read_data_from_source (FILE *file){
     /**
      * Go through file, read and parse lines, and fill data container
      */
-    int j, k;
+    //int j, k;
     for(i = 0 ; i < data->nb_probes ; i++ ){
 
         /*

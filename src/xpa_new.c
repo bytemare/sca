@@ -185,6 +185,7 @@ void xpa(container *data, char xpa_mode[4]){
         }
 
         key[i] = (uint8_t)k;
+        printf("\n[i] Key[%d] : 0x%2.2x\n", i, key[i]);
 
         // Clean up memory
         memset(ref_curve, 0, AES_KEY_RANGE * sizeof(double));
