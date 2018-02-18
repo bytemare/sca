@@ -107,15 +107,15 @@ static void aes_enc_lastround(aes_cipher_state_t* state,const aes_roundkey_t* k)
 void aes_encrypt_core(aes_cipher_state_t* state, const aes_genctx_t* ks, uint8_t rounds){
 	uint8_t i;
 
-	// plaintext xored to a random mask and then the key
+	// plaintext xored to a mask and then to the key
 	for(i=0; i<16; ++i){
-		state->s[i] ^= pgm_read_byte(m+((j[0] + i) % 16));
+		state->s[i] ^= pgm_read_byte(m0+((j[0] + i) % 16));
         state->s[i] ^= ks->key[0].ks[i]; //
 	}
 
 	i=1;
 	for(;rounds>1;--rounds){
-		aes_enc_round(state, &(ks->key[i]), rng, j); // RNG TO SEARCH
+		aes_enc_round(state, &(ks->key[i]), j);
 		++i;
 		// J TO CHECK
 		j[0] = (j[0] + 1) % 16; // At the end of each round , the mask is shifted by 1 byte
