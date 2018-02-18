@@ -15,7 +15,7 @@
 #include "aes_enc.h"
 #include <avr/pgmspace.h>
 #include <sboxes_rsm.h>
-#include <time.h>
+#include <stdlib.h>
 
 void aes_shiftcol(void* data, uint8_t shift){
 	uint8_t tmp[4];
@@ -61,7 +61,7 @@ static void aes_enc_round(aes_cipher_state_t* state, const aes_roundkey_t* k, ui
 	for(i=0; i<4; ++i){
 		t = tmp[4*i+0] ^ tmp[4*i+1] ^ tmp[4*i+2] ^ tmp[4*i+3];
 		state->s[4*i+0] = GF256MUL_2(tmp[4*i+0]^tmp[4*i+1]) ^ tmp[4*i+0] ^ t;
-		state->s[4*i+1] = GF256MUL_2(tmp[4*i+1]^tmp[4*i+2])	^ tmp[4*i+1] ^ t;
+		state->s[4*i+1] = GF256MUL_2(tmp[4*i+1]^tmp[4*i+2]) ^ tmp[4*i+1] ^ t;
 		state->s[4*i+2] = GF256MUL_2(tmp[4*i+2]^tmp[4*i+3]) ^ tmp[4*i+2] ^ t;
 		state->s[4*i+3] = GF256MUL_2(tmp[4*i+3]^tmp[4*i+0]) ^ tmp[4*i+3] ^ t;
 	}
@@ -77,7 +77,7 @@ static void aes_enc_round(aes_cipher_state_t* state, const aes_roundkey_t* k, ui
 static void aes_enc_lastround(aes_cipher_state_t* state,const aes_roundkey_t* k, uint8_t init){
 	uint8_t i;
 	int index;
-    int tmp;
+    	int tmp;
 
 	/* subBytes */
 	for(i=0; i<16; ++i){
@@ -106,13 +106,15 @@ void aes_encrypt_core(aes_cipher_state_t* state, const aes_genctx_t* ks, uint8_t
 	uint8_t i;
 	uint8_t init;	// random initial substitution Sbox offset
 
-	srand(time(NULL));
+	// we use the address of the var init to initialise the seed
+	// (could not include the .h files for time() or getpid())	
+	srand((unsigned int)&init);
 	init = rand() % 16;
 
 	// plaintext xored to a mask and then to the key
 	for(i = 0; i < 16; i++){
-		state->s[i] ^= pgm_read_byte(m0+((init[0] + i) % 16));
-        state->s[i] ^= ks->key[0].ks[i]; //
+		state->s[i] ^= pgm_read_byte(m0+((init + i) % 16));
+        	state->s[i] ^= ks->key[0].ks[i]; //
 	}
 
 	for(i = 1; rounds > 1; rounds--){
