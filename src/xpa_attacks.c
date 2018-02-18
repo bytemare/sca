@@ -3,7 +3,7 @@
 #include <math.h>
 #include <xpa_attacks.h>
 #include <memory.h>
-#include "pearson.h"
+#include <correlation.h>
 
 uint8_t sbox_oracle(uint8_t key_byte, uint8_t plain_byte){
     return Sbox[key_byte ^ plain_byte];
@@ -138,14 +138,17 @@ uint8_t hamming_weight(uint8_t k){
  */
 void cpa(container *data) {
 
-    uint8_t i, k = 0;
-    uint32_t j, l, max;
-    uint8_t key[AES_KEY_SIZE];
+    uint8_t i, k, key[AES_KEY_SIZE];
+    uint32_t j;
 
     double ref_curve[AES_KEY_RANGE] = {0};
 
-    double *hamming = calloc((size_t)data->nb_probes, sizeof(float));
+    double *hamming = calloc((size_t)data->nb_probes, sizeof(double));
 
+    /**
+     * Transposing the matrix once allows faster memory access
+     */
+    double **transpose_datapoints = transpose_datapoint_matrix(data);
 
     /**
      * For every byte of the AES key
@@ -160,7 +163,7 @@ void cpa(container *data) {
             for (j = 0; j < data->nb_probes; j++) {
 
                 // 1. Discriminator / Oracle
-                k = Sbox[key[i] ^ data->t_plaintexts[j][i]];
+                k = sbox_oracle(key[i], data->t_plaintexts[j][i]);
 
                 // 2. Compute Hamming Weight (i.e. number of bits different from zero in byte k)
                 hamming[j] = hamming_weight(k);
@@ -169,35 +172,42 @@ void cpa(container *data) {
             // 3. Build a reference curve with correlation coefficients
             //ref_curve[key[i]] = pearson_correlation(data->t_traces[?], hamming);
 
+            //ref_curve[ key[i] ] = fabs(pearson_correlation(data->t_traces[i], hamming, data->nb_probes));
+            double *pearson_vector = compute_pearson_vector(data, transpose_datapoints, hamming);
 
-            // 3.b Store all the correlation coefficients of the samples
-            ref_curve[ key[i] ] = 0;
-            // use the absolute value (-1 and 1 are the values at which the correlation is the strongest)
-            // calculation made for each key guess [i]
-            k = fabsf(pearson_correlation(data->t_traces[i], hamming, data->nb_probes));
-            if (k > ref_curve[ key[i] ]){
-                ref_curve[ key[i] ] = k;
-            }
+            ref_curve[ key[i] ] = get_max_correlation(pearson_vector, data->nb_datapoints);
 
-            if ( key[i] == 255 ){
+            free(pearson_vector);
+
+            //printf("%.10g - ", ref_curve[ key[i] ]);
+
+            printf("%d %%\r", (int)floor(100*(key[i] + 1)/AES_KEY_RANGE));
+            fflush(stdout);
+
+            // uint8_t overflows in this loop, so this is trap to quit last round
+            if ( key[i] == AES_KEY_RANGE - 1 ){
                 break;
             }
         }
 
+        printf("\n");
+
         // 4. Get the outstanding/maximum value out of the reference curve for that byte
         // This should be our key byte
-        max = 0;
-        for (l = 1; l < AES_KEY_RANGE; l++) {
-            if (ref_curve[l] >= ref_curve[max]) {
-                max = l;
+        k = 0;
+        for ( j = 1 ; j < AES_KEY_RANGE ; j++){
+            if (ref_curve[j] >= ref_curve[k]){
+                k = (uint8_t)j;
             }
         }
 
-        key[i] = (uint8_t)max;
+        key[i] = k;
+
+        printf("[i] Key[%d] : 0x%2.2x\n", i, key[i]);
 
         // Clean up memory
-        memset(ref_curve, 0, AES_KEY_RANGE * sizeof(double));
-        memset(hamming, 0, AES_KEY_RANGE * sizeof(double));
+        //memset(ref_curve, 0, sizeof(ref_curve));
+        //memset(hamming, 0, (size_t)data->nb_probes * sizeof(double));
     }
 
     printf("[i] Recovered AES key :\n");

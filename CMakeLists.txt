@@ -7,6 +7,8 @@ project(sca)
 # set(CMAKE_C_FLAGS " ${COMPILATION_WARNINGS} ${LINKER_LIBRARIES} -fstack-protector -pie -fPIC  -D_GNU_SOURCE -D_FORTIFY_SOURCE=2 -O3 -std=c89 ")
 # -D_XOPEN_SOURCE=700
 
+set(CMAKE_C_FLAGS -O2)
+
 set(CMAKE_CXX_STANDARD 11)
 
 set(SOURCE_FILES
@@ -15,6 +17,7 @@ set(SOURCE_FILES
         src/xpa_attacks.c
         src/xpa_new.c
         src/cpa_write.c
+        src/correlation.c
         src/pearson.c)
 
 include_directories(include/ src/)

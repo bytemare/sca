@@ -1,6 +1,7 @@
 #include <xpa_attacks.h>
 #include <read_csv.h>
 #include <xpa_new.h>
+#include <time.h>
 
 
 int main(int argc, char *argv[]){
@@ -10,6 +11,7 @@ int main(int argc, char *argv[]){
         exit(0);
     }
 
+    clock_t start,end;
 
     /**
      * Verify file before handling
@@ -37,62 +39,19 @@ int main(int argc, char *argv[]){
      * Launch DPA attack
      */
     printf("[i] Launching DPA on dataset...\n");
+    start = clock();
     dpa(data);
-    printf("\n[i] DPA completed.\n\n");
+    end = clock();
+    printf("\n[i] DPA completed (%.2f sec.)\n\n", (double)(end - start) / CLOCKS_PER_SEC);
 
     /**
      * Launch CPA attack
      */
     printf("[i] Launching CPA on dataset...\n");
+    start = clock();
     cpa(data);
-    printf("\n[i] CPA completed.\n\n");
-
-
-
-
-
-
-    free_data_memory(data);
-
-    printf("[i] Testing factorised code ...\n");
-
-    /**
-     * Verify file before handling
-     */
-    printf("[i] Checking file...\n");
-    file = check_and_open_file(argv[1]);
-    if (file == NULL){
-        exit(1);
-    }
-
-    printf("File %s checked and opened.\n", argv[1]);
-
-    /**
-     * Load Traces ...
-     */
-    printf("[i] Loading Traces ...\n");
-    data = read_data_from_source(file);
-    if( data == NULL){
-        printf("[ERROR] Could not load traces. Aborting.\n");
-        exit(1);
-    }
-    printf("[i] Loading completed.\n\n");
-
-
-    /**
-     * Launch DPA attack
-     */
-    printf("[i] Launching DPA on dataset...\n");
-    xpa(data, "dpa");
-    printf("\n[i] DPA completed.\n\n");
-
-    /**
-     * Launch CPA attack
-     */
-    printf("[i] Launching CPA on dataset...\n");
-    xpa(data, "cpa");
-    printf("\n[i] CPA completed.\n\n");
-
+    end = clock();
+    printf("\n[i] CPA completed (%.2f sec.)\n\n", (double)(end - start) / CLOCKS_PER_SEC);
 
     /**
      * Job is done.

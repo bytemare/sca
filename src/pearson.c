@@ -1,11 +1,6 @@
-#include <stdlib.h>
-#include <stdbool.h>
-#include <stdio.h>
-#include <string.h>
 #include <math.h>
 #include "pearson.h"
 
-static double standard_deviation(double* data, int size);
 
 /**
  * returns pearson correlation coefficient given 2 lists of doubles
@@ -21,21 +16,20 @@ double pearson_correlation(double* X, double* Y, int size)
     double pearson;
     double tmp_X = 0, tmp_Y = 0, tot = 0;
 
-    double EX;
-    double EY;
-    double EXY;
+    double EX, EY, EXY;
     double covariance;
-    double X_deviation;
-    double Y_deviation;
+    double X_deviation, Y_deviation;
 
-    for(int i = 0; i < size; i++){
+    int i;
+
+    for( i = 0; i < size; i++){
         tmp_X += X[i];
         tmp_Y += Y[i];
     }
     EX = tmp_X / size;
     EY = tmp_Y / size;
 
-    for(int i = 0; i < size; i++){
+    for(i = 0; i < size; i++){
         tot += (X[i] * Y[i]);
     }
 
@@ -66,7 +60,9 @@ static double standard_deviation(double* data, int size)
     double res;
     double tmp = 0;
 
-    for(int i = 0; i < size; i++)
+    int i;
+
+    for( i = 0; i < size; i++)
     {
         squares[i] = pow(data[i], 2);
         tmp += data[i];
@@ -76,7 +72,7 @@ static double standard_deviation(double* data, int size)
 
     tmp = 0;
 
-    for(int i = 0; i < size; i++)
+    for( i = 0; i < size; i++)
     {
         tmp += squares[i] = pow(data[i], 2);
     }
@@ -88,9 +84,4 @@ static double standard_deviation(double* data, int size)
     return res;
 }
 
-/*int main(){
-    double list_a[6] = {0.12890625, -0.005859375, 0.08203125, 0.048828125, 0.126953125, -0.047851563};
-    double list_b[6] = {0.125976563, -0.013671875, 0.07421875, 0.043945313, 0.123046875, -0.053710938};
-    double coef = pearson_correlation(list_a, list_b, 6);
-    printf("%f\n", coef);
-}*/
+
