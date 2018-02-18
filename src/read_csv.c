@@ -6,7 +6,6 @@
 #include <unistd.h>
 #include <memory.h>
 #include <read_csv.h>
-#include <constants.h>
 
 
 /**

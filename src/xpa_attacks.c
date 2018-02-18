@@ -22,7 +22,7 @@ void dpa(container * data){
 
     double max;
     double ref_curve[AES_KEY_RANGE] = {0};
-    double *average = calloc(data->nb_datapoints, sizeof(double));
+    double *average = calloc((size_t)data->nb_datapoints, sizeof(double));
 
     double *group[2];
     int size[2] = {0};
