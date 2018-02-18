@@ -14,6 +14,6 @@ cd $BUILD
 cmake -DCMAKE_BUILD_TYPE=Debug ..
 make
 cd ..
-ln -s ./$BUILD/$EXEC $LINK
+#ln -s ./$BUILD/$EXEC $LINK
 
-chmod 500 $BUILD/$EXEC
+#chmod 500 $BUILD/$EXEC

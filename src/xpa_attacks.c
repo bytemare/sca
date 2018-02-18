@@ -109,7 +109,7 @@ void dpa(container * data){
 
     printf("[i] Recovered AES key :\n");
     for (i = 0 ; i < AES_KEY_SIZE ; i++) {
-        printf(" %d ", key[i]);
+        printf(" %2.2x ", key[i]);
     }
 
 
@@ -189,8 +189,6 @@ void cpa(container *data) {
             }
         }
 
-        printf("\n");
-
         // 4. Get the outstanding/maximum value out of the reference curve for that byte
         // This should be our key byte
         k = 0;
@@ -211,7 +209,7 @@ void cpa(container *data) {
 
     printf("[i] Recovered AES key :\n");
     for (i = 0 ; i < AES_KEY_SIZE ; i++) {
-        printf(" %d ", key[i]);
+        printf(" %2.2x ", key[i]);
     }
 
     // Clean up memory and quit

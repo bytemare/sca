@@ -6,6 +6,7 @@
 #include <unistd.h>
 #include <memory.h>
 #include <read_csv.h>
+#include <constants.h>
 
 
 /**
@@ -293,8 +294,9 @@ int read_datapoints_line(int i, FILE *file, container *data, const unsigned char
         }
 
         if (j >= data->nb_datapoints) {
-            printf("Error : overflowed data points.\n");
-            break;
+            printf("[ERROR] : overflowed data points. Probe %d has too many datapoints (should be %d).\n", i, data->nb_datapoints);
+            buffer ? free(buffer): NULL;
+            return -2;
         }
 
         /* Convert token to string */
@@ -304,6 +306,8 @@ int read_datapoints_line(int i, FILE *file, container *data, const unsigned char
         token = strtok(NULL, (const char*)delimiter);
         //printf("%s \n", token);
     }
+
+    buffer ? free(buffer): NULL;
 }
 
 
