@@ -14,6 +14,7 @@
 #include "aes_sbox.h"
 #include "aes_enc.h"
 #include <avr/pgmspace.h>
+#include <sboxes_rsm.h>
 
 void aes_shiftcol(void* data, uint8_t shift){
 	uint8_t tmp[4];
@@ -42,8 +43,12 @@ static void aes_enc_round(aes_cipher_state_t* state, const aes_roundkey_t* k){
 
 	/* subBytes */
 	for(i=0; i<16; ++i){
-		index = (((j[0] + index_order[i]) % 16)*256); 			// Selection of the Sbox to be read
-		tmp[index_order[i]] = pgm_read_byte(aes_sbox0+(index + (state->s[index_order[i]])));
+		// j substitution sbox randomly chosen
+		// i current bit
+		// modulo 16 because there are 16 Sboxes
+		// *256 since all boxes are stored in the same array, and each sbox is of size 256
+		index = (((j[0] + index_order[i]) % 16) * 256); 		// => Selection of the Sbox to be read
+		tmp[index_order[i]] = pgm_read_byte(mbox + (index + (state->s[index_order[i]])));
 	}
 
 	/* shiftRows */
@@ -65,7 +70,7 @@ static void aes_enc_round(aes_cipher_state_t* state, const aes_roundkey_t* k){
 
 	/* addKey */
 	for(i=0; i<16; ++i){
-		tmp[i] = pgm_read_byte( ?? ((((j[0]+1)%16)*16) + i));
+		tmp[i] = pgm_read_byte( mask_compensation + ((((j[0]+1)%16)*16) + i)); // !!!!
 		state->s[i] ^= ((k->ks[i])^tmp[i]) ;
 	}
 }
@@ -77,8 +82,8 @@ static void aes_enc_lastround(aes_cipher_state_t* state,const aes_roundkey_t* k)
 
 	/* subBytes */
 	for(i=0; i<16; ++i){
-		index = (((j[0] + i) % 16)*256);
-		tmp[index_order[i]] = pgm_read_byte(aes_sbox0+(index + (state->s[i])));
+		index = (((j[0] + i) % 16) * 256); // !!!
+		tmp[index_order[i]] = pgm_read_byte(mbox + (index + (state->s[i])));
 	}
 
 	/* shiftRows */
@@ -87,7 +92,7 @@ static void aes_enc_lastround(aes_cipher_state_t* state,const aes_roundkey_t* k)
 	aes_shiftcol(state->s+3, 3);
 
 	for(i=0; i<16; ++i){
-        tmp =  pgm_read_byte( ?? (256 + (((j[0]+1)%16)*16) + i));
+        tmp =  pgm_read_byte( mask_compensation + (256 + (((j[0]+1)%16)*16) + i)); // !!!!!
         state->s[i] ^= tmp ;
 	}
 
