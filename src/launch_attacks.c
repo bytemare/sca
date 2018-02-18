@@ -1,6 +1,5 @@
 #include <xpa_attacks.h>
 #include <read_csv.h>
-#include <xpa_new.h>
 #include <time.h>
 
 

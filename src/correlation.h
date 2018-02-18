@@ -22,5 +22,14 @@ double get_max_correlation(double *pearson_vector, uint32_t size);
  */
 double** transpose_datapoint_matrix(container *data);
 
+/**
+ * Applies precedent functions to get the pearson correlation coefficient for the given hamming weight vector
+ * @param data
+ * @param transpose_datapoints
+ * @param hamming
+ * @return
+ */
+double compute_highest_correlation_coefficient(container *data, double **transpose_datapoints, double *hamming);
+
 
 #endif /*SCA_CORRELATION_H*/

@@ -2,8 +2,16 @@
 #include <constants.h>
 #include <math.h>
 #include <stdlib.h>
-//#include <stdio.h>
 
+
+/**
+ * Real Kitchen of computation
+ * Computes the pearson's correlation coefficient for the given set (one can see the vectors as curves)
+ * @param datapoints
+ * @param Y
+ * @param nb_probes
+ * @return
+ */
 double correlationCoefficient(double *datapoints, double *Y, uint32_t nb_probes){
 
     uint32_t i;
@@ -32,7 +40,13 @@ double correlationCoefficient(double *datapoints, double *Y, uint32_t nb_probes)
 }
 
 
-
+/**
+ * Computes the vector of pearson's correlation coefficients for the given datapoints and the hamming weight vector
+ * @param data
+ * @param datapoints
+ * @param hamming
+ * @return
+ */
 double* compute_pearson_vector(container *data, double **datapoints, double *hamming){
 
     uint32_t i;
@@ -48,6 +62,12 @@ double* compute_pearson_vector(container *data, double **datapoints, double *ham
     return pearson_vector;
 }
 
+/**
+ * From a set of pearson coefficients, gets the highest
+ * @param pearson_vector
+ * @param size
+ * @return
+ */
 double get_max_correlation(double *pearson_vector, uint32_t size){
 
     uint32_t i;
@@ -87,4 +107,19 @@ double** transpose_datapoint_matrix(container *data){
     }
 
     return transpose;
+}
+
+
+/**
+ * Applies precedent functions to get the pearson correlation coefficient for the given hamming weight vector
+ * @param data
+ * @param transpose_datapoints
+ * @param hamming
+ * @return
+ */
+double compute_highest_correlation_coefficient(container *data, double **transpose_datapoints, double *hamming){
+
+    double *pearson_vector = compute_pearson_vector(data, transpose_datapoints, hamming);
+
+    return get_max_correlation(pearson_vector, data->nb_datapoints);
 }

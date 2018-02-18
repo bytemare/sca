@@ -10,6 +10,11 @@ uint8_t sbox_oracle(uint8_t key_byte, uint8_t plain_byte){
 }
 
 
+void print_percentage(int32_t step, int32_t top){
+    printf("%d %%\r", (int)floor(100*(step + 1)/top));
+    fflush(stdout);
+}
+
 void dpa(container * data){
 
     uint8_t i, k, key[AES_KEY_SIZE];
@@ -68,11 +73,14 @@ void dpa(container * data){
             // 5. Insert it in reference curve
             ref_curve[key[i]] = max;
 
-            // Reset up memory
+            // Clean up memory
             memset(group[0], 0, sizeof(double) * data->nb_datapoints);
             memset(group[1], 0, sizeof(double) * data->nb_datapoints);
             size[0] = 0;
             size[1] = 0;
+
+            // Print something for operator to get feedback ( can I haz coffee ? )
+            print_percentage(key[i], AES_KEY_RANGE);
 
             // uint8_t overflows in this loop, so this is trap to quit last round
             if ( key[i] == AES_KEY_RANGE - 1 ){
@@ -170,19 +178,10 @@ void cpa(container *data) {
             }
 
             // 3. Build a reference curve with correlation coefficients
-            //ref_curve[key[i]] = pearson_correlation(data->t_traces[?], hamming);
+            ref_curve[ key[i] ] = compute_highest_correlation_coefficient(data, transpose_datapoints, hamming);
 
-            //ref_curve[ key[i] ] = fabs(pearson_correlation(data->t_traces[i], hamming, data->nb_probes));
-            double *pearson_vector = compute_pearson_vector(data, transpose_datapoints, hamming);
-
-            ref_curve[ key[i] ] = get_max_correlation(pearson_vector, data->nb_datapoints);
-
-            free(pearson_vector);
-
-            //printf("%.10g - ", ref_curve[ key[i] ]);
-
-            printf("%d %%\r", (int)floor(100*(key[i] + 1)/AES_KEY_RANGE));
-            fflush(stdout);
+            // Print something for operator to get feedback ( can I haz coffee ? )
+            print_percentage(key[i], AES_KEY_RANGE);
 
             // uint8_t overflows in this loop, so this is trap to quit last round
             if ( key[i] == AES_KEY_RANGE - 1 ){
