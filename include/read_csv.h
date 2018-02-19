@@ -9,7 +9,7 @@ void print_traces(container *data);
  * Checks if file is a regular and tries to open a stream on it.
  * @param filename
  */
-FILE* check_and_open_file(const char *filename);
+FILE* check_and_open_file(const char *filename, uint32_t mode);
 
 /**
  * Initialises container data
@@ -33,10 +33,5 @@ void free_data_memory(container *data);
  */
 container* read_data_from_source (FILE *file);
 
-/**
- * Checks if file is a regular and tries to open a stream on it.
- * @param filename
- */
-FILE* check_and_open_file(const char *filename);
 
 #endif /*SCA_2_READ_CSV_H*/

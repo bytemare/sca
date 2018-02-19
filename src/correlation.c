@@ -121,5 +121,9 @@ double compute_highest_correlation_coefficient(container *data, double **transpo
 
     double *pearson_vector = compute_pearson_vector(data, transpose_datapoints, hamming);
 
-    return get_max_correlation(pearson_vector, data->nb_datapoints);
+    double max = get_max_correlation(pearson_vector, data->nb_datapoints);
+
+    free(pearson_vector);
+
+    return max;
 }
