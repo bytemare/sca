@@ -105,30 +105,48 @@ void print_traces(container *data){
  * Checks if file is a regular and tries to open a stream on it.
  * @param filename
  */
-FILE* check_and_open_file(const char *filename){
+FILE* check_and_open_file(const char *filename, uint32_t mode){
     FILE* file;
     struct stat file_info;
-    int fd;
+    int fd, o_mode;
+    char f_mode[3] = {0};
 
-    fd = open(filename, O_RDONLY);
+    switch (mode){
+        case O_RDONLY:
+            o_mode = O_RDONLY;
+            f_mode[0] = 'r';
+            break;
+
+        case O_WRONLY:
+            o_mode = O_WRONLY | O_CREAT | O_EXCL;
+            f_mode[0] = 'w';
+            break;
+
+        default:
+            o_mode = O_RDONLY;
+            f_mode[0] = 'r', f_mode[0] = 'w';
+            break;
+    }
+
+    fd = open(filename, o_mode);
 
     if ( fd == -1 ){
-        perror("[ERROR] Could not open file.");
+        perror("[ERROR] Could not open file ");
         return NULL;
     }
 
     fstat(fd, &file_info);
 
     if (!S_ISREG(file_info.st_mode)) {
-        perror("[ERROR] File is not a regular file !");
+        perror("[ERROR] File is not a regular file ! ");
         close(fd);
         return NULL;
     }
 
-    file = fdopen(fd, "r");
+    file = fopen(filename, f_mode);
 
     if(file == NULL){
-        perror("[ERROR] Could not open file stream.");
+        perror("[ERROR] Could not open file stream ");
         close(fd);
         return NULL;
     }
@@ -408,8 +426,6 @@ container* read_data_from_source (FILE *file){
         }
 
     }
-
-    fclose(file);
 
     return data;
 }

@@ -9,6 +9,6 @@
 
 void dpa(container *data);
 
-void cpa(container *data);
+void cpa(container *data, FILE *output_file);
 
 #endif /*SCA_2_XPA_ATTACKS_H*/

@@ -1,5 +1,6 @@
 #include <xpa_attacks.h>
 #include <read_csv.h>
+#include <fcntl.h>
 #include <time.h>
 
 
@@ -10,18 +11,29 @@ int main(int argc, char *argv[]){
         exit(0);
     }
 
+    printf("[i] If it is not already the case, consider compiling with gcc option -O2,"
+                   "which will drastically shorten execution time.\n");
+
     clock_t start,end;
 
     /**
      * Verify file before handling
      */
-    printf("[i] Checking file...\n");
-    FILE* file = check_and_open_file(argv[1]);
+    printf("[i] Checking files...\n");
+    FILE* file = check_and_open_file(argv[1], O_RDONLY);
     if (file == NULL){
         exit(1);
     }
 
-    printf("File %s checked and opened.\n", argv[1]);
+    printf("File %s checked and opened for reading.\n", argv[1]);
+
+    FILE* ouput_file = check_and_open_file(argv[2], O_WRONLY);
+    if (ouput_file == NULL){
+        fclose(file);
+        exit(1);
+    }
+
+    printf("File %s checked and opened for writing.\n", argv[2]);
 
     /**
      * Load Traces ...
@@ -32,6 +44,7 @@ int main(int argc, char *argv[]){
         printf("[ERROR] Could not load traces. Aborting.\n");
         exit(1);
     }
+    fclose(file);
     printf("[i] Loading completed.\n\n");
 
     /**
@@ -39,7 +52,7 @@ int main(int argc, char *argv[]){
      */
     printf("[i] Launching DPA on dataset...\n");
     start = clock();
-    dpa(data);
+    //dpa(data);
     end = clock();
     printf("\n[i] DPA completed (%.2f sec.)\n\n", (double)(end - start) / CLOCKS_PER_SEC);
 
@@ -48,7 +61,8 @@ int main(int argc, char *argv[]){
      */
     printf("[i] Launching CPA on dataset...\n");
     start = clock();
-    cpa(data);
+    cpa(data, ouput_file);
+    fclose(ouput_file);
     end = clock();
     printf("\n[i] CPA completed (%.2f sec.)\n\n", (double)(end - start) / CLOCKS_PER_SEC);
 
