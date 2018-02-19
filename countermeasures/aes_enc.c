@@ -81,7 +81,7 @@ static void aes_enc_lastround(aes_cipher_state_t* state,const aes_roundkey_t* k,
 
 	/* subBytes */
 	for(i=0; i<16; ++i){
-		index = (((init + i) % 16) * 256);
+		index = (((init + index_order[i]) % 16) * 256);
 		state->s[i] = pgm_read_byte(mbox + (index + (state->s[i])));
 	}
 
@@ -114,7 +114,7 @@ void aes_encrypt_core(aes_cipher_state_t* state, const aes_genctx_t* ks, uint8_t
 	// plaintext xored to a mask and then to the key
 	for(i = 0; i < 16; i++){
 		state->s[i] ^= pgm_read_byte(m0+((init + i) % 16));
-        	state->s[i] ^= ks->key[0].ks[i]; //
+        state->s[i] ^= ks->key[0].ks[i]; //
 	}
 
 	for(i = 1; rounds > 1; rounds--){
