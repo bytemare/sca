@@ -108,7 +108,7 @@ void aes_encrypt_core(aes_cipher_state_t* state, const aes_genctx_t* ks, uint8_t
 
 	// we use the address of the var init to initialise the seed
 	// (could not include the .h files for time() or getpid())	
-	srand((unsigned int)&init);
+	srand((intptr_t)&init);
 	init = rand() % 16;
 
 	// plaintext xored to a mask and then to the key
