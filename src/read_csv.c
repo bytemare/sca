@@ -6,6 +6,7 @@
 #include <unistd.h>
 #include <memory.h>
 #include <read_csv.h>
+#include <errno.h>
 
 
 /**
@@ -54,14 +55,14 @@ container* initialise_data_memory(uint32_t lines, uint32_t datapoints){
 void free_data_memory(container *data){
     int i;
 
-    for( i = 0 ; i < data->nb_probes ; ++i){
+    for( i = 0 ; i < data->nb_probes ; i++){
         if(data->t_plaintexts[i]) {
             free(data->t_plaintexts[i]);
         }
     }
     free(data->t_plaintexts);
 
-    for( i = 0 ; i < data->nb_probes ; ++i){
+    for( i = 0 ; i < data->nb_probes ; i++){
         if (data->t_traces[i]){
             free(data->t_traces[i]);
         }
@@ -75,7 +76,7 @@ void free_data_memory(container *data){
  * Debug Function to print read data
  * @param data
  */
-void print_traces(container *data){
+/*void print_traces(container *data){
     int i, j;
 
     printf("traces : %d\n", data->nb_probes);
@@ -97,7 +98,7 @@ void print_traces(container *data){
     printf("\n");
 
     free(data);
-}
+}*/
 
 
 
@@ -118,7 +119,7 @@ FILE* check_and_open_file(const char *filename, uint32_t mode){
             break;
 
         case O_WRONLY:
-            o_mode = O_WRONLY | O_CREAT | O_EXCL;
+            o_mode = O_CREAT | O_WRONLY | O_TRUNC;
             f_mode[0] = 'w';
             break;
 
@@ -232,8 +233,6 @@ int read_plaintext_line(int i, FILE *file, container *data){
         return -2;
     }
 
-
-
     // check for error here
 
     /* Get the line */
@@ -248,8 +247,11 @@ int read_plaintext_line(int i, FILE *file, container *data){
         return -2;
     }
 
-    p = (uint16_t) strtol(buffer, &token, 10);
-    for ( j = 0 ; j < NB_PLAINTEXT_BYTES && p != 0 ; j++){
+    //printf("\n%d Read\n%s", i, buffer);
+    p = (uint16_t) strtoul(buffer, &token, 10);
+    for ( j = 0 ; j < NB_PLAINTEXT_BYTES && ( p != 0 || errno != ERANGE); j++){
+
+        //printf("%d ", p);
 
         if ( p > 255 ){
             printf("[ERROR] Invalid value for plaintext entry on line %d : '%d'\n", i, p);
@@ -260,7 +262,11 @@ int read_plaintext_line(int i, FILE *file, container *data){
         data->t_plaintexts[i][j] = (uint8_t) p;
         //printf("[%d][%d] : %d\n", i, j, data->t_plaintexts[i][j]);
 
-        p = (uint16_t) strtol(token+1, &token, 10);
+        p = (uint16_t) strtoul(token+1, &token, 10);
+    }
+
+    if (j != 16){
+        printf("didn't work\n");
     }
 
     free(buffer);

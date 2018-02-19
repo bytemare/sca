@@ -25,7 +25,7 @@ int main(int argc, char *argv[]){
         exit(1);
     }
 
-    printf("File %s checked and opened for reading.\n", argv[1]);
+    printf("[i] File %s checked and opened for reading.\n", argv[1]);
 
     FILE* ouput_file = check_and_open_file(argv[2], O_WRONLY);
     if (ouput_file == NULL){
@@ -33,7 +33,7 @@ int main(int argc, char *argv[]){
         exit(1);
     }
 
-    printf("File %s checked and opened for writing.\n", argv[2]);
+    printf("[i] File %s checked and opened for writing.\n", argv[2]);
 
     /**
      * Load Traces ...
@@ -52,7 +52,7 @@ int main(int argc, char *argv[]){
      */
     printf("[i] Launching DPA on dataset...\n");
     start = clock();
-    //dpa(data);
+    dpa(data);
     end = clock();
     printf("\n[i] DPA completed (%.2f sec.)\n\n", (double)(end - start) / CLOCKS_PER_SEC);
 
